@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate and Download QR Code</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #eaeaea;
+      color: #333;
+    }
+
+    .scanner-container {
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 20px;
+      color: #4CAF50;
+      font-weight: 600;
+    }
+
+    .scanner-input {
+      padding: 14px;
+      font-size: 18px;
+      width: 90%;
+      margin-bottom: 20px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .scanner-input:focus {
+      border-color: #4CAF50;
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+    }
+
+    .generate-button {
+      padding: 14px 28px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 90%;
+      margin-bottom: 20px;
+      transition: background-color 0.3s ease;
+    }
+
+    .generate-button:hover {
+      background-color: #45a049;
+    }
+
+    #qrCode {
+      margin-top: 20px;
+      display: none;
+    }
+
+    #qrImage {
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+    }
+
+    .download-buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-evenly;
+    }
+
+    .download-button {
+      padding: 12px 18px;
+      background-color: #2196F3;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .download-button:hover {
+      background-color: #1976D2;
+    }
+
+    .upload-section {
+      margin-top: 30px;
+    }
+
+    .upload-button {
+      font-size: 16px;
+      padding: 12px 20px;
+      background-color: #FF5722;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .upload-button:hover {
+      background-color: #D84315;
+    }
+
+    #decodedMessage {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #0288D1;
+    }
+
+    .copy-text {
+      font-size: 18px;
+      margin-top: 15px;
+      color: #4CAF50;
+      cursor: pointer;
+      user-select: none;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="scanner-container">
+    <h1>Generate Your QR Code</h1>
+
+    <!-- Input field to enter text -->
+    <input type="text" id="nameInput" class="scanner-input" placeholder="Enter text here">
+
+    <!-- Generate QR code button -->
+    <button class="generate-button" onclick="generateScannerCode()">Generate QR Code</button>
+
+    <!-- Section to show generated QR code -->
+    <div id="qrCode">
+      <h3>Your QR Code:</h3>
+      <img id="qrImage" src="" alt="QR Code">
+
+      <!-- Download buttons for QR Code -->
+      <div class="download-buttons">
+        <button class="download-button" onclick="downloadQRCode('png')">Download PNG</button>
+        <button class="download-button" onclick="downloadQRCode('svg')">Download SVG</button>
+      </div>
+
+      <!-- Text that can be copied -->
+      <div class="copy-text" onclick="copyQRCodeText()">Click to copy the QR code text</div>
+    </div>
+
+    <!-- Section for uploading a QR code to decode -->
+    <div class="upload-section">
+      <h3>Or Upload a QR Code to Decode:</h3>
+      <input type="file" id="qrUpload" accept="image/*" class="upload-button">
+      <div id="decodedMessage"></div>
+
+      <!-- Copy the decoded text -->
+      <div id="copyDecodedText" class="copy-text" style="display: none;" onclick="copyDecodedText()">Click to copy decoded text</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
+
+  <script>
+    // Function to generate QR code based on entered text
+    function generateScannerCode() {
+      const nameInput = document.getElementById('nameInput').value.trim();
+      const qrCodeElement = document.getElementById('qrCode');
+      const qrImageElement = document.getElementById('qrImage');
+      const copyTextElement = document.querySelector('.copy-text');
+
+      // Check if the name input is not empty
+      if (nameInput) {
+        QRCode.toDataURL(nameInput, { width: 250, margin: 4 }, function (err, url) {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          qrImageElement.src = url;
+          qrCodeElement.style.display = 'block';  // Show QR code once generated
+          copyTextElement.textContent = `QR code text: ${nameInput}`; // Update the copy text
+        });
+      } else {
+        qrCodeElement.style.display = 'none'; // Hide if input is empty
+        copyTextElement.textContent = `Click to copy the QR code text`; // Default text
+      }
+    }
+
+    // Function to handle file upload and decode QR code
+    document.getElementById('qrUpload').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0, img.width, img.height);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const qrCodeData = jsQR(imageData.data, canvas.width, canvas.height);
+
+            if (qrCodeData) {
+              // Show only the decoded name part
+              const decodedText = qrCodeData.data.trim();
+              document.getElementById('decodedMessage').textContent = `Decoded Text: ${decodedText}`;
+              document.getElementById('copyDecodedText').style.display = 'block'; // Show copy button
+            } else {
+              document.getElementById('decodedMessage').textContent = "No QR code detected.";
+              document.getElementById('copyDecodedText').style.display = 'none'; // Hide copy button if no code
+            }
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Function to copy QR code text when clicked
+    function copyQRCodeText() {
+      const qrText = document.getElementById('nameInput').value.trim();
+      
+      if (qrText) {
+        navigator.clipboard.writeText(qrText).then(function() {
+          alert('Text copied to clipboard!');
+        }, function(err) {
+          alert('Failed to copy text: ', err);
+        });
+      } else {
+        alert('No text available to copy.');
+      }
+    }
+
+    // Function to copy decoded QR code text when clicked
+    function copyDecodedText() {
+      const decodedText = document.getElementById('decodedMessage').textContent.replace('Decoded Text: ', '');
+      
+      if (decodedText) {
+        navigator.clipboard.writeText(decodedText).then(function() {
+          alert('Decoded text copied to clipboard!');
+        }, function(err) {
+          alert('Failed to copy text: ', err);
+        });
+      } else {
+        alert('No decoded text available to copy.');
+      }
+    }
+
+    // Function to download QR code in PNG or SVG format
+    function downloadQRCode(format = 'png') {
+      const qrImageElement = document.getElementById('qrImage');
+      const qrText = document.getElementById('nameInput').value.trim() || 'scanner_code';
+
+      if (format === 'png') {
+        const link = document.createElement('a');
+        link.href = qrImageElement.src;
+        link.download = `${qrText}.png`;
+        link.click();
+      } else if (format === 'svg') {
+        QRCode.toString(qrText, { type: 'svg' }, function(err, svg) {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          const link = document.createElement('a');
+          const svgBlob = new Blob([svg], { type: 'image/svg+xml' });
+          const svgUrl = URL.createObjectURL(svgBlob);
+          link.href = svgUrl;
+          link.download = `${qrText}.svg`;
+          link.click();
+        });
+      }
+    }
+  </script>
+</body>
+</html>
